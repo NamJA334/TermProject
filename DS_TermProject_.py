@@ -282,7 +282,7 @@ result_num=0
 
 
 
-numerical_data=data[['age','education num','capital-gain','hours-per-week']]
+numerical_data=data[['age','education num','capital-gain','capital-loss','hours-per-week']]
 categorical_data=data[['sex','workclass','education']]
 
 features = ['age', 'sex', 'workclass', 'education','education num','capital-gain','capital-loss','hours-per-week']
@@ -298,50 +298,50 @@ y =LabelEncoder().fit_transform(data['outcome'])
 K=[2,3,4,5,6,7,8,9,10]# k for k-fold 
 cutoff=[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 
-for j in cutoff:
-    for i in K:
-        for sc_f in sc_func:
-            for enc_f in enc_func:
+# for j in cutoff:
+#     for i in K:
+#         for sc_f in sc_func:
+#             for enc_f in enc_func:
             
            
             
-                num_d=sc_f(numerical_data)
-                cat_d = enc_f(categorical_data)
-                num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
-                cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
+#                 num_d=sc_f(numerical_data)
+#                 cat_d = enc_f(categorical_data)
+#                 num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
+#                 cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
            
                 
-                X = pd.concat([num_d, cat_d], axis=1)
+#                 X = pd.concat([num_d, cat_d], axis=1)
             
             
             
-                kf=KFold(n_splits=i)
-                for al_f in al_func:
-                    y_accuracy=[]
-                    y_precision=[]
-                    y_recall=[]
-                    y_f1=[]
+#                 kf=KFold(n_splits=i)
+#                 for al_f in al_func:
+#                     y_accuracy=[]
+#                     y_precision=[]
+#                     y_recall=[]
+#                     y_f1=[]
                 
-                    for train_index,test_index in kf.split(X):
-                        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-                        y_train,y_test=y[train_index],y[test_index]
+#                     for train_index,test_index in kf.split(X):
+#                         X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+#                         y_train,y_test=y[train_index],y[test_index]
 
-                        y_pred=al_f(X_train,y_train,X_test,j)
+#                         y_pred=al_f(X_train,y_train,X_test,j)
                         
-                        accuracy = accuracy_score(y_test,y_pred)
-                        precision = precision_score(y_test, y_pred)
-                        recall = recall_score(y_test, y_pred)
-                        f1 = f1_score(y_test, y_pred)
+#                         accuracy = accuracy_score(y_test,y_pred)
+#                         precision = precision_score(y_test, y_pred)
+#                         recall = recall_score(y_test, y_pred)
+#                         f1 = f1_score(y_test, y_pred)
                         
-                        y_accuracy.append(accuracy)
-                        y_precision.append(precision)
-                        y_recall.append(recall)
-                        y_f1.append(f1)
+#                         y_accuracy.append(accuracy)
+#                         y_precision.append(precision)
+#                         y_recall.append(recall)
+#                         y_f1.append(f1)
                 
                 
-                    result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j],list(features)])
-                    print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
-                    result_num+=1
+#                     result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j],list(features)])
+#                     print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
+#                     result_num+=1
  
 
 
@@ -354,21 +354,28 @@ for j in cutoff:
             
            
             
-                num_d=sc_f(numerical_data)
-                cat_d = enc_f(categorical_data)
-                num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
-                cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
+                
            
                 
-                X = pd.concat([num_d, cat_d], axis=1)
-                for feature_num in range(6):
+                
+                for feature_num in range(2,8):
                     for combination in itertools.combinations(features, feature_num):
+                        num_d=sc_f(numerical_data)
+                        cat_d = enc_f(categorical_data)
+                        num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
+                        cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
+                        X = pd.concat([num_d, cat_d], axis=1)
                         combination=list(combination)
+                        
                         X=X[combination]
+                        
             
                         kf=KFold(n_splits=i)
                         for al_f in al_func:
                             y_accuracy=[]
+                            y_precision=[]
+                            y_recall=[]
+                            y_f1=[]
               
                             for train_index,test_index in kf.split(X):
                                 X_train, X_test = X.iloc[train_index], X.iloc[test_index]
@@ -376,20 +383,20 @@ for j in cutoff:
 
                                 y_pred=al_f(X_train,y_train,X_test,j)
                         
-                        accuracy = accuracy_score(y_test,y_pred)
-                        precision = precision_score(y_test, y_pred)
-                        recall = recall_score(y_test, y_pred)
-                        f1 = f1_score(y_test, y_pred)
+                                accuracy = accuracy_score(y_test,y_pred)
+                                precision = precision_score(y_test, y_pred)
+                                recall = recall_score(y_test, y_pred)
+                                f1 = f1_score(y_test, y_pred)
                         
-                        y_accuracy.append(accuracy)
-                        y_precision.append(precision)
-                        y_recall.append(recall)
-                        y_f1.append(f1)
+                                y_accuracy.append(accuracy)
+                                y_precision.append(precision)
+                                y_recall.append(recall)
+                                y_f1.append(f1)
                 
                 
-                    result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j],combination])
-                    #print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
-                    result_num+=1                
+                            result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j],combination])
+                            print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
+                            result_num+=1                
 
 #Top 5 Results with High Accuracy            
 result.sort(key=lambda x: x[0][4], reverse=True)
@@ -417,3 +424,7 @@ result.sort(key=lambda x: x[0][7], reverse=True)
 print("Top 5 Results with High f1")                  
 for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
+
+with open('result.txt','w',encoding='UTF-8') as f:
+    for name in result:
+        f.write(name+'\n')
