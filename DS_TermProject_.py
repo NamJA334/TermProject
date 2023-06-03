@@ -297,6 +297,7 @@ y =LabelEncoder().fit_transform(data['outcome'])
 
 K=[2,3,4,5,6,7,8,9,10]# k for k-fold 
 cutoff=[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+
 for j in cutoff:
     for i in K:
         for sc_f in sc_func:
@@ -339,7 +340,7 @@ for j in cutoff:
                 
                 
                     result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j],list(features)])
-                    #print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
+                    print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
                     result_num+=1
  
 
@@ -392,20 +393,27 @@ for j in cutoff:
 
 #Top 5 Results with High Accuracy            
 result.sort(key=lambda x: x[0][4], reverse=True)
+print("Top 5 Results with High Accuracy")
 for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
+
 
 #Top 5 Results with High Precision
-result.sort(key=lambda x: x[0][5], reverse=True)                    
+result.sort(key=lambda x: x[0][5], reverse=True) 
+print("Top 5 Results with High Precision")                   
 for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
+
 
 #Top 5 Results with High Recall
-result.sort(key=lambda x: x[0][6], reverse=True)                    
+result.sort(key=lambda x: x[0][6], reverse=True)   
+print("Top 5 Results with High Recall")                 
 for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
 
+
 #Top 5 Results with High f1
-result.sort(key=lambda x: x[0][7], reverse=True)                    
+result.sort(key=lambda x: x[0][7], reverse=True)  
+print("Top 5 Results with High f1")                  
 for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
