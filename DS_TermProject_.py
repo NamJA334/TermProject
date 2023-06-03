@@ -4,9 +4,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import MaxAbsScaler
 from sklearn.preprocessing import RobustScaler
-from sklearn.model_selection import cross_val_score, train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.cluster import KMeans
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -94,303 +91,291 @@ print(data.shape)
 
 print()
 
+
+
 # Keep real data.
 real_data=data.copy()
 
-# Step 4. Encoding Categorical Data
-print("===================================================================")
-print("              Step 4. Encoding Categorical Data")
-print("===================================================================")
-
-# Encoding 'sex' column
-data = pd.get_dummies(data, columns=['sex'])
-
-# Encoding 'workclass' column
-data = pd.get_dummies(data, columns=['workclass'])
-
-# Encoding 'education' column
-data = pd.get_dummies(data, columns=['education'])
-
-# Encoding 'outcome' column
-data = pd.get_dummies(data, columns=['outcome'])
-
-#pd.set_option('display.max_columns', None)
-
-print("\n----- data after encoding -----\n")
-print(data.head())
-
-data_encoded = data
-
-# Step 5. Scaling Data
-print("===================================================================")
-print("                  Step 5. Scaling Data")
-print("===================================================================")
-
-# StandardScaler
-scaler = StandardScaler()
-data_standard_scaled = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
-
-# MinMaxScaler
-scaler = MinMaxScaler()
-data_minmax_scaled = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
-
-# MaxAbsScaler
-scaler = MaxAbsScaler()
-data_maxabs_scaled = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
-
-# RobustScaler
-scaler = RobustScaler()
-data_robust_scaled = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
-
-# Update 'data' to be the scaled data
-# Maybe changed to the other scaler
-data = data_standard_scaled.copy()
 
 
-# Step 6. Clustering
-print("===================================================================")
-print("                        Step 6. Clustering")
-print("===================================================================")
 
-from sklearn.cluster import KMeans
-
-# Define the number of clusters
-n_clusters = 2
-
-# Initialize the KMeans model
-kmeans = KMeans(n_clusters=n_clusters, random_state=0)
-
-# Fit the model to the data
-kmeans.fit(data_encoded)
-
-# Get the cluster labels
-labels = kmeans.labels_
-
-# Assign the cluster labels as the predicted outcome
-data_encoded['predicted_outcome'] = labels
-
-# Print the first few rows of the data
-print(data_encoded.head())
+#===============================================================================
+#============================== encoding function =================================
+#===============================================================================
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 
-# Step 7. Logistic Regression
-print("===================================================================")
-print("                 Step 7. Logistic Regression")
-print("===================================================================")
+def label_enc(data):
+    # encode the categorical columns using LabelEncoder
+    le = LabelEncoder()
+    data_encoded = data.apply(lambda col: le.fit_transform(col))
+    return data_encoded
 
+def onehot_enc(data):
+    # Get the list of columns to encode
+    cols_to_encode = data.columns.tolist()
+
+    # Apply one-hot encoding to the selected columns
+    for col in cols_to_encode:
+        dummies = pd.get_dummies(data[col], drop_first=False)
+        data = pd.concat([data, dummies], axis=1)
+        data.drop(col, axis=1, inplace=True)
+
+    return data
+
+
+
+
+
+#===============================================================================
+#============================== get y_pred function =================================
+#===============================================================================
+
+
+from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-
-# Separate features and labels (assuming 'outcome' and 'working_hours' are the labels and the rest are features)
-features = data_encoded.drop(['outcome_<=50K', 'outcome_>50K', 'hours-per-week'], axis=1)
-labels_outcome = data_encoded['outcome_>50K']  # choose one of the outcome columns
-labels_hours = data_encoded['hours-per-week']
-
-# Split the data into training and test sets for outcome
-features_train, features_test, labels_train, labels_test = train_test_split(features, labels_outcome, test_size=0.2, random_state=42)
-
-# Initialize the Logistic Regression model for outcome
-logreg_outcome = LogisticRegression()
-
-# Fit the model to the training data
-logreg_outcome.fit(features_train, labels_train)
-
-# Predict the labels for the test set
-predictions_outcome = logreg_outcome.predict(features_test)
-
-# Calculate the accuracy of the model
-accuracy_outcome = accuracy_score(labels_test, predictions_outcome)
-
-print("\n----- Outcome Prediction Accuracy -----\n")
-print(accuracy_outcome)
-
-
-# Split the data into training and test sets for working hours
-features_train, features_test, labels_train, labels_test = train_test_split(features, labels_hours, test_size=0.2, random_state=42)
-
-# Initialize the Logistic Regression model for working hours
-logreg_hours = LogisticRegression()
-
-# Fit the model to the training data
-logreg_hours.fit(features_train, labels_train)
-
-# Predict the labels for the test set
-predictions_hours = logreg_hours.predict(features_test)
-
-# Calculate the accuracy of the model
-accuracy_hours = accuracy_score(labels_test, predictions_hours)
-
-print("\n----- Working Hours Prediction Accuracy -----\n")
-print(accuracy_hours)
-
-
-
-# Step 8. k-fold cross validation for Logistic Regression
-print("===================================================================")
-print("      Step 8. k-fold cross validation for Logistic Regression")
-print("===================================================================")
-from sklearn.model_selection import cross_val_score
-
-# 1. Outcome
-
-# Initialize the Logistic Regression model for outcome
-logreg_outcome = LogisticRegression()
-
-# Fit the model to the training data
-logreg_outcome.fit(features_train, labels_train)
-
-# Perform 10-fold cross-validation
-scores_outcome_lr = cross_val_score(logreg_outcome, features, labels_outcome, cv=10)
-
-# Print the cross-validation scores
-print("\n----- Outcome Prediction Cross-Validation Scores -----\n")
-print(scores_outcome_lr)
-
-# Print the mean cross-validation score
-print("\n----- Outcome Prediction Mean Cross-Validation Score -----\n")
-print(np.mean(scores_outcome_lr))
-
-# 2. Working hours
-
-# Initialize the Logistic Regression model for working hours
-logreg_hours = LogisticRegression()
-
-# Fit the model to the training data
-logreg_hours.fit(features_train, labels_train)
-
-# Perform 10-fold cross-validation
-scores_hours_lr = cross_val_score(logreg_hours, features, labels_hours, cv=10)
-
-# Print the cross-validation scores
-print("\n----- Working Hours Prediction Cross-Validation Scores -----\n")
-print(scores_hours_lr)
-
-# Print the mean cross-validation score
-print("\n----- Working Hours Prediction Mean Cross-Validation Score -----\n")
-print(np.mean(scores_hours_lr))
-
-# Step 9. k-fold cross validation for KNN
-print("===================================================================")
-print("                  Step 9. k-fold cross validation for KNN")
-print("===================================================================")
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
 
-# 1. Outcome
+# Get y_pred value using training datas and X_test data.
+def logistic_reg(X_train,y_train,X_test,cutoff):
 
-# Initialize the KNeighborsClassifier model for outcome
-knn_outcome = KNeighborsClassifier()
+    # Logistic Regression model
+    log_reg = LogisticRegression()
 
-# Fit the model to the training data
-knn_outcome.fit(features_train, labels_train)
+    # fit training set
+    log_reg.fit(X_train, y_train)
 
-# Perform 10-fold cross-validation
-scores_outcome_knn = cross_val_score(knn_outcome, features, labels_outcome, cv=10)
-
-# Print the cross-validation scores
-print("\n----- Outcome Prediction Cross-Validation Scores -----\n")
-print(scores_outcome_knn)
-
-# Print the mean cross-validation score
-print("\n----- Outcome Prediction Mean Cross-Validation Score -----\n")
-print(np.mean(scores_outcome_knn))
-
-# 2. Working hours
-
-# Initialize the KNeighborsClassifier model for working hours
-knn_hours = KNeighborsClassifier()
-
-# Fit the model to the training data
-knn_hours.fit(features_train, labels_train)
-
-# Perform 10-fold cross-validation
-scores_hours_knn = cross_val_score(knn_hours, features, labels_hours, cv=10)
-
-# Print the cross-validation scores
-print("\n----- Working Hours Prediction Cross-Validation Scores -----\n")
-print(scores_hours_knn)
-
-# Print the mean cross-validation score
-print("\n----- Working Hours Prediction Mean Cross-Validation Score -----\n")
-print(np.mean(scores_hours_knn))
+    # get y_pred using predict X_test.
+    y_pred_prob = log_reg.predict_proba(X_test)
+    y_pred=(y_pred_prob[:, 1] >= cutoff).astype(int)
 
 
-# Step 10. k-fold cross validation for Decision Tree
-print("===================================================================")
-print("            Step 10. k-fold cross validation for Decision Tree")
-print("===================================================================")
+    return y_pred
 
-# 1. Outcome
 
-# Initialize the DecisionTreeClassifier model for outcome
-dtree_outcome = DecisionTreeClassifier()
+def decision_cls(X_train,y_train,X_test,cutoff):
+    #Decision tree classifier
+    dcs=DecisionTreeClassifier()
+    
+    #Train Decision tree classifer
+    dcs = dcs.fit(X_train,y_train)
 
-# Fit the model to the training data
-dtree_outcome.fit(features_train, labels_train)
+    #Predict the response for test dataset
+    y_pred_prob = dcs.predict_proba(X_test)
+    y_pred=(y_pred_prob[:, 1] >= cutoff).astype(int)
+    
+    return y_pred
+    
 
-# Perform 10-fold cross-validation
-scores_outcome_dtree = cross_val_score(dtree_outcome, features, labels_outcome, cv=10)
+def knn_cls(X_train,y_train,X_test,cutoff):
+    #K Neighbors Classifier
+    knn=KNeighborsClassifier()
+    
+    #Train knn classifer
+    knn = knn.fit(X_train,y_train)
 
-# Print the cross-validation scores
-print("\n----- Outcome Prediction Cross-Validation Scores -----\n")
-print(scores_outcome_dtree)
+    #Predict the response for test dataset
+    y_pred_prob = knn.predict_proba(X_test)
+    y_pred=(y_pred_prob[:, 1] >= cutoff).astype(int)
+    
+    return y_pred
+    
 
-# Print the mean cross-validation score
-print("\n----- Outcome Prediction Mean Cross-Validation Score -----\n")
-print(np.mean(scores_outcome_dtree))
 
-# 2. Working hours
 
-# Initialize the DecisionTreeClassifier model for working hours
-dtree_hours = DecisionTreeClassifier()
 
-# Fit the model to the training data
-dtree_hours.fit(features_train, labels_train)
+#===============================================================================
+#============================== Modeling (Clustering) =================================
+#===============================================================================
 
-# Perform 10-fold cross-validation
-scores_hours_dtree = cross_val_score(dtree_hours, features, labels_hours, cv=10)
+# from sklearn.cluster import KMeans
+# import matplotlib.pyplot as plt
 
-# Print the cross-validation scores
-print("\n----- Working Hours Prediction Cross-Validation Scores -----\n")
-print(scores_hours_dtree)
+# import itertools
 
-# Print the mean cross-validation score
-print("\n----- Working Hours Prediction Mean Cross-Validation Score -----\n")
-print(np.mean(scores_hours_dtree))
+# features = ['age', 'sex', 'workclass', 'education','education num',
+#                      'capital-gain','capital-loss','hours-per-week']
 
-# Step 11. k-fold cross validation score - plot
-print("===================================================================")
-print("            Step 11. k-fold cross validation score - plot")
-print("===================================================================")
+# en_X=encoding_data
 
-import matplotlib.pyplot as plt
+# for combination in itertools.combinations(features, 2):
+#   combination=list(combination)
+#   f1=combination[0]
+#   f2=combination[1]
 
-# Model names
-models = ['Logistic Regression', 'KNN', 'Decision Tree']
+#   # make clustering .
+#   kmeans = KMeans(n_clusters=3, random_state=0)
 
-# Mean cross-validation scores for 'outcome' prediction
-outcome_scores = [np.mean(scores_outcome_lr), np.mean(scores_outcome_knn), np.mean(scores_outcome_dtree)]
+#   # model fitting
+#   kmeans.fit(en_X)
 
-# Mean cross-validation scores for 'working hours' prediction
-hours_scores = [np.mean(scores_hours_lr), np.mean(scores_hours_knn), np.mean(scores_hours_dtree)]
+#   # get clustering labels_
+#   labels = kmeans.labels_
 
-# Bar width
-barWidth = 0.25
+#   print("---------------------- ( ",f1,",",f2," ) ----------------------")
 
-# Position of bars on x-axis
-r1 = np.arange(len(outcome_scores))
-r2 = [x + barWidth for x in r1]
+#   # Visualize
+#   # We have 8 features without outcome.
+#   # So, Make all available cases of features.
 
-# Create outcome bars
-plt.bar(r1, outcome_scores, width = barWidth, color = 'blue', edgecolor = 'grey', label='Outcome')
+#   plt.scatter(en_X[f1], en_X[f2] , c=labels)
+#   plt.xlabel(f1)
+#   plt.ylabel(f2)
+#   plt.show()
 
-# Create working hours bars
-plt.bar(r2, hours_scores, width = barWidth, color = 'cyan', edgecolor = 'grey', label='Working Hours')
 
-# Adding xticks
-plt.xlabel('Models', fontweight='bold', fontsize=15)
-plt.ylabel('Mean Cross-Validation Score', fontweight='bold', fontsize=15)
-plt.xticks([r + barWidth for r in range(len(outcome_scores))], models)
 
-plt.legend()
-plt.show()
+from sklearn.model_selection import train_test_split
+
+def standard_scale(data):
+    # feature scaling (standard scaler)
+    scaler = StandardScaler()
+
+    data= scaler.fit_transform(data)
+    
+    
+    return  data
+
+def minmax_scale(data):
+    # feature scaling (minmax scaler)
+    scaler = MinMaxScaler()
+
+    data= scaler.fit_transform(data)
+    
+    
+    return  data
+
+def maxabs_scale(data):
+    # feature scaling (maxabs scaler)
+    scaler = MaxAbsScaler()
+
+    data= scaler.fit_transform(data)
+    
+    
+    return  data
+
+def robust_scale(data):
+    # feature scaling (robustscaler)
+    scaler = RobustScaler()
+
+    data= scaler.fit_transform(data)
+    
+    
+    return  data
+
+
+
+#algorithm func
+al_func=[logistic_reg,decision_cls,knn_cls]
+
+#scaler func
+sc_func=[standard_scale,minmax_scale,maxabs_scale,robust_scale]
+
+#encoding func
+enc_func=[label_enc,onehot_enc]
+
+
+#evaluation result
+result=[]
+result_num=0
+
+
+
+numerical_data=data[['age','education num','capital-gain','capital-loss','hours-per-week']]
+categorical_data=data[['sex','workclass','education']]
+
+features = ['age', 'sex', 'workclass', 'education','education num','capital-gain','capital-loss','hours-per-week']
+
+#k-fold cross validation using same algoritm, for every selected parameters
+from sklearn.model_selection import KFold
+from sklearn.metrics import accuracy_score,precision_score, recall_score, f1_score
+
+y =LabelEncoder().fit_transform(data['outcome'])
+
+
+
+K=[2,3,4,5,6,7,8,9,10]# k for k-fold 
+cutoff=[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+
+
+
+
+#k-fold cross validation using same algoritm, but select defferent combination of model parameters
+import itertools
+for j in cutoff:
+    for i in K:
+        for sc_f in sc_func:
+            for enc_f in enc_func:
+                            
+                for feature_num in range(2,9):
+                    num_d=sc_f(numerical_data)
+                    cat_d = enc_f(categorical_data)
+                    num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
+                    cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
+                    X = pd.concat([num_d, cat_d], axis=1)
+                    for combination in itertools.combinations(X.columns, feature_num):
+                        combination=list(combination)
+                        
+                        X = pd.concat([num_d, cat_d], axis=1)
+                        X=X[combination]
+                        
+            
+                        kf=KFold(n_splits=i)
+                        for al_f in al_func:
+                            y_accuracy=[]
+                            y_precision=[]
+                            y_recall=[]
+                            y_f1=[]
+              
+                            for train_index,test_index in kf.split(X):
+                                X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+                                y_train,y_test=y[train_index],y[test_index]
+
+                                y_pred=al_f(X_train,y_train,X_test,j)
+                        
+                                accuracy = accuracy_score(y_test,y_pred)
+                                precision = precision_score(y_test, y_pred)
+                                recall = recall_score(y_test, y_pred)
+                                f1 = f1_score(y_test, y_pred)
+                        
+                                y_accuracy.append(accuracy)
+                                y_precision.append(precision)
+                                y_recall.append(recall)
+                                y_f1.append(f1)
+                
+                
+                            result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j],combination])
+                            print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
+                            result_num+=1                
+
+#Top 5 Results with High Accuracy            
+result.sort(key=lambda x: x[0][4], reverse=True)
+print("Top 5 Results with High Accuracy")
+for i in range(5):
+    print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
+
+
+#Top 5 Results with High Precision
+result.sort(key=lambda x: x[0][5], reverse=True) 
+print("Top 5 Results with High Precision")                   
+for i in range(5):
+    print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
+
+
+#Top 5 Results with High Recall
+result.sort(key=lambda x: x[0][6], reverse=True)   
+print("Top 5 Results with High Recall")                 
+for i in range(5):
+    print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
+
+
+#Top 5 Results with High f1
+result.sort(key=lambda x: x[0][7], reverse=True)  
+print("Top 5 Results with High f1")                  
+for i in range(5):
+    print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
+
+with open('result.txt','w',encoding='UTF-8') as f:
+    for name in result:
+        f.write(name+'\n')
