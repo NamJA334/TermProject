@@ -275,7 +275,8 @@ al_func=[logistic_reg,decision_cls,knn_cls]
 sc_func=[standard_scale,minmax_scale,maxabs_scale,robust_scale]
 
 #encoding func
-enc_func=[label_enc,onehot_enc]
+enc_func=[label_enc]
+''',onehot_enc'''
 
 
 #result=[k,used features, scaler, encoder, algorithm, accuracy, precision, recall, f1, cutoff]
@@ -298,8 +299,8 @@ y =LabelEncoder().fit_transform(data['outcome'])
 
 
 
-K=[2,3,4,5,6,7,8,9,10]# k for k-fold 
-cutoff=[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]# cutoff for ROC
+K=[10]# k for k-fold 
+cutoff=[0.5]# cutoff for ROC
 
 
 
@@ -310,19 +311,21 @@ for j in cutoff:#cutoff
     for i in K:# k for k-fold cross validation
         for sc_f in sc_func:#for scaling
             for enc_f in enc_func:#for encoding
-                            
-                for feature_num in range(2,9):#feature select
-                    num_d=sc_f(numerical_data)#numerical data after scaling
-                    cat_d = enc_f(categorical_data)#categorical data after encoding
-                    num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
-                    cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
-                    X = pd.concat([num_d, cat_d], axis=1)#merge cat data and num data
-                    
+                num_d=sc_f(numerical_data)#numerical data after scaling
+                cat_d = enc_f(categorical_data)#categorical data after encoding
+                num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
+                cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
+                X = pd.concat([num_d, cat_d], axis=1)#merge cat data and num data
+                print(X.shape[1]-1)
+                for feature_num in range(2,X.shape[1]):#feature select
+                     
                     #for select features
                     for combination in itertools.combinations(X.columns, feature_num):
+                        
+                        
                         combination=list(combination)#make list
                         
-                        X = pd.concat([num_d, cat_d], axis=1)#changes to original
+                        
                         X=X[combination]
                         
             
@@ -356,7 +359,10 @@ for j in cutoff:#cutoff
                             #append to result and print
                             result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j],combination])
                             print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
-                            result_num+=1                
+                            result_num+=1
+                            X = pd.concat([num_d, cat_d], axis=1)#changes to original              
+
+
 
 #Top 5 Results with High Accuracy            
 result.sort(key=lambda x: x[0][4], reverse=True)
@@ -384,22 +390,3 @@ result.sort(key=lambda x: x[0][7], reverse=True)
 print("Top 5 Results with High f1")                  
 for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
-
-#save result as file
-with open('result.txt','w',encoding='UTF-8') as f:
-    for name in result:
-        f.write(name+'\n')
-
-
-
-
-    
-
-
-    
-    
-    
-    
-        
-    
-    
