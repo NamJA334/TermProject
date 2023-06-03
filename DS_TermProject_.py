@@ -15,6 +15,7 @@ print("===================================================================")
 
 df=pd.read_csv("adult.data",header=None)
 
+#features of adult data
 features = ['age','workclass','fnlwgt','education',
             'education num','marital-status','occupation','relationship',
             'race','sex','capital-gain','capital-loss','hours-per-week','native-country','outcome']
@@ -148,6 +149,7 @@ def logistic_reg(X_train,y_train,X_test,cutoff):
 
     # get y_pred using predict X_test.
     y_pred_prob = log_reg.predict_proba(X_test)
+    
     y_pred=(y_pred_prob[:, 1] >= cutoff).astype(int)
 
 
@@ -276,75 +278,82 @@ sc_func=[standard_scale,minmax_scale,maxabs_scale,robust_scale]
 enc_func=[label_enc,onehot_enc]
 
 
-#evaluation result
+#result=[k,used features, scaler, encoder, algorithm, accuracy, precision, recall, f1, cutoff]
 result=[]
 result_num=0
 
 
 
-numerical_data=data[['age','education num','capital-gain','capital-loss','hours-per-week']]
-categorical_data=data[['sex','workclass','education']]
+numerical_data=data[['age','education num','capital-gain','capital-loss','hours-per-week']]#numerical data for scaling
+categorical_data=data[['sex','workclass','education']]#categorical data for encoding
 
-features = ['age', 'sex', 'workclass', 'education','education num','capital-gain','capital-loss','hours-per-week']
+
 
 #k-fold cross validation using same algoritm, for every selected parameters
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score,precision_score, recall_score, f1_score
 
+#'outcome'
 y =LabelEncoder().fit_transform(data['outcome'])
 
 
 
 K=[2,3,4,5,6,7,8,9,10]# k for k-fold 
-cutoff=[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+cutoff=[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]# cutoff for ROC
 
 
 
 
 #k-fold cross validation using same algoritm, but select defferent combination of model parameters
 import itertools
-for j in cutoff:
-    for i in K:
-        for sc_f in sc_func:
-            for enc_f in enc_func:
+for j in cutoff:#cutoff
+    for i in K:# k for k-fold cross validation
+        for sc_f in sc_func:#for scaling
+            for enc_f in enc_func:#for encoding
                             
-                for feature_num in range(2,9):
-                    num_d=sc_f(numerical_data)
-                    cat_d = enc_f(categorical_data)
+                for feature_num in range(2,9):#feature select
+                    num_d=sc_f(numerical_data)#numerical data after scaling
+                    cat_d = enc_f(categorical_data)#categorical data after encoding
                     num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
                     cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
-                    X = pd.concat([num_d, cat_d], axis=1)
+                    X = pd.concat([num_d, cat_d], axis=1)#merge cat data and num data
+                    
+                    #for select features
                     for combination in itertools.combinations(X.columns, feature_num):
-                        combination=list(combination)
+                        combination=list(combination)#make list
                         
-                        X = pd.concat([num_d, cat_d], axis=1)
+                        X = pd.concat([num_d, cat_d], axis=1)#changes to original
                         X=X[combination]
                         
             
                         kf=KFold(n_splits=i)
-                        for al_f in al_func:
+                        for al_f in al_func:#for algorithm
+                            
+                            #List to get the average value
                             y_accuracy=[]
                             y_precision=[]
                             y_recall=[]
                             y_f1=[]
               
-                            for train_index,test_index in kf.split(X):
+                            for train_index,test_index in kf.split(X):#divide data
                                 X_train, X_test = X.iloc[train_index], X.iloc[test_index]
                                 y_train,y_test=y[train_index],y[test_index]
 
-                                y_pred=al_f(X_train,y_train,X_test,j)
-                        
+                                y_pred=al_f(X_train,y_train,X_test,j)#running model and get prediction data
+
+                                #get score
                                 accuracy = accuracy_score(y_test,y_pred)
                                 precision = precision_score(y_test, y_pred)
                                 recall = recall_score(y_test, y_pred)
                                 f1 = f1_score(y_test, y_pred)
-                        
+
+                                #append to list
                                 y_accuracy.append(accuracy)
                                 y_precision.append(precision)
                                 y_recall.append(recall)
                                 y_f1.append(f1)
                 
-                
+                            #append to result and print
                             result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j],combination])
                             print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
                             result_num+=1                
@@ -376,6 +385,21 @@ print("Top 5 Results with High f1")
 for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
 
+#save result as file
 with open('result.txt','w',encoding='UTF-8') as f:
     for name in result:
         f.write(name+'\n')
+
+
+
+
+    
+
+
+    
+    
+    
+    
+        
+    
+    
