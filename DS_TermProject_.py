@@ -316,7 +316,7 @@ for j in cutoff:#cutoff
                 num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
                 cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
                 X = pd.concat([num_d, cat_d], axis=1)#merge cat data and num data
-                print(X.shape[1]-1)
+                
                 for feature_num in range(2,X.shape[1]+1):#feature select
                      
                     #for select features
@@ -357,8 +357,8 @@ for j in cutoff:#cutoff
                                 y_precision.append(precision)
                                 y_recall.append(recall)
                                 y_f1.append(f1)
-                                y_test_=y_test_+y_test
-                                y_pred_=y_pred_+y_pred
+                                y_test_=y_test_+list(y_test)
+                                y_pred_=y_pred_+list(y_pred)
                 
                             #append to result and print
                             result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j,y_test_,y_pred_],combination])
@@ -434,4 +434,4 @@ model_accuracy.sort(key=lambda x: x[0], reverse=True)
 print()
 print("best model:")
 print("k=",result[model_accuracy[0][1]][0][0],", used features=",result[model_accuracy[0][1]][1],", scaler=",result[model_accuracy[0][1]][0][1].__name__,", encoder=",result[model_accuracy[0][1]][0][2].__name__,", algorithm=",result[model_accuracy[0][1]][0][3].__name__,", accuracy=",result[model_accuracy[0][1]][0][4],", precision=",result[model_accuracy[0][1]][0][5],", recall=",result[model_accuracy[0][1]][0][6],", f1=",result[model_accuracy[0][1]][0][7],", cutoff=",result[model_accuracy[0][1]][0][8])
-   
+  
