@@ -200,9 +200,9 @@ print(accuracy_hours)
 
 
 
-# Step 7. k-fold cross validation for testing classification
+# Step 7. k-fold cross validation for Logistic Regression
 print("===================================================================")
-print("                 Step 7. k-fold cross validation")
+print("      Step 7. k-fold cross validation for Logistic Regression")
 print("===================================================================")
 from sklearn.model_selection import cross_val_score
 
@@ -215,15 +215,15 @@ logreg_outcome = LogisticRegression()
 logreg_outcome.fit(features_train, labels_train)
 
 # Perform 10-fold cross-validation
-scores_outcome = cross_val_score(logreg_outcome, features, labels_outcome, cv=10)
+scores_outcome_lr = cross_val_score(logreg_outcome, features, labels_outcome, cv=10)
 
 # Print the cross-validation scores
 print("\n----- Outcome Prediction Cross-Validation Scores -----\n")
-print(scores_outcome)
+print(scores_outcome_lr)
 
 # Print the mean cross-validation score
 print("\n----- Outcome Prediction Mean Cross-Validation Score -----\n")
-print(np.mean(scores_outcome))
+print(np.mean(scores_outcome_lr))
 
 # 2. Working hours
 
@@ -234,15 +234,138 @@ logreg_hours = LogisticRegression()
 logreg_hours.fit(features_train, labels_train)
 
 # Perform 10-fold cross-validation
-scores_hours = cross_val_score(logreg_hours, features, labels_hours, cv=10)
+scores_hours_lr = cross_val_score(logreg_hours, features, labels_hours, cv=10)
 
 # Print the cross-validation scores
 print("\n----- Working Hours Prediction Cross-Validation Scores -----\n")
-print(scores_hours)
+print(scores_hours_lr)
 
 # Print the mean cross-validation score
 print("\n----- Working Hours Prediction Mean Cross-Validation Score -----\n")
-print(np.mean(scores_hours))
+print(np.mean(scores_hours_lr))
+
+# Step 8. k-fold cross validation for KNN
+print("===================================================================")
+print("                  Step 8. k-fold cross validation for KNN")
+print("===================================================================")
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+
+# 1. Outcome
+
+# Initialize the KNeighborsClassifier model for outcome
+knn_outcome = KNeighborsClassifier()
+
+# Fit the model to the training data
+knn_outcome.fit(features_train, labels_train)
+
+# Perform 10-fold cross-validation
+scores_outcome_knn = cross_val_score(knn_outcome, features, labels_outcome, cv=10)
+
+# Print the cross-validation scores
+print("\n----- Outcome Prediction Cross-Validation Scores -----\n")
+print(scores_outcome_knn)
+
+# Print the mean cross-validation score
+print("\n----- Outcome Prediction Mean Cross-Validation Score -----\n")
+print(np.mean(scores_outcome_knn))
+
+# 2. Working hours
+
+# Initialize the KNeighborsClassifier model for working hours
+knn_hours = KNeighborsClassifier()
+
+# Fit the model to the training data
+knn_hours.fit(features_train, labels_train)
+
+# Perform 10-fold cross-validation
+scores_hours_knn = cross_val_score(knn_hours, features, labels_hours, cv=10)
+
+# Print the cross-validation scores
+print("\n----- Working Hours Prediction Cross-Validation Scores -----\n")
+print(scores_hours_knn)
+
+# Print the mean cross-validation score
+print("\n----- Working Hours Prediction Mean Cross-Validation Score -----\n")
+print(np.mean(scores_hours_knn))
 
 
+# Step 9. k-fold cross validation for Decision Tree
+print("===================================================================")
+print("            Step 9. k-fold cross validation for Decision Tree")
+print("===================================================================")
 
+# 1. Outcome
+
+# Initialize the DecisionTreeClassifier model for outcome
+dtree_outcome = DecisionTreeClassifier()
+
+# Fit the model to the training data
+dtree_outcome.fit(features_train, labels_train)
+
+# Perform 10-fold cross-validation
+scores_outcome_dtree = cross_val_score(dtree_outcome, features, labels_outcome, cv=10)
+
+# Print the cross-validation scores
+print("\n----- Outcome Prediction Cross-Validation Scores -----\n")
+print(scores_outcome_dtree)
+
+# Print the mean cross-validation score
+print("\n----- Outcome Prediction Mean Cross-Validation Score -----\n")
+print(np.mean(scores_outcome_dtree))
+
+# 2. Working hours
+
+# Initialize the DecisionTreeClassifier model for working hours
+dtree_hours = DecisionTreeClassifier()
+
+# Fit the model to the training data
+dtree_hours.fit(features_train, labels_train)
+
+# Perform 10-fold cross-validation
+scores_hours_dtree = cross_val_score(dtree_hours, features, labels_hours, cv=10)
+
+# Print the cross-validation scores
+print("\n----- Working Hours Prediction Cross-Validation Scores -----\n")
+print(scores_hours_dtree)
+
+# Print the mean cross-validation score
+print("\n----- Working Hours Prediction Mean Cross-Validation Score -----\n")
+print(np.mean(scores_hours_dtree))
+
+# Step 10. k-fold cross validation score - plot
+print("===================================================================")
+print("            Step 10. k-fold cross validation score - plot")
+print("===================================================================")
+
+import matplotlib.pyplot as plt
+
+# Model names
+models = ['Logistic Regression', 'KNN', 'Decision Tree']
+
+# Mean cross-validation scores for 'outcome' prediction
+outcome_scores = [np.mean(scores_outcome_lr), np.mean(scores_outcome_knn), np.mean(scores_outcome_dtree)]
+
+# Mean cross-validation scores for 'working hours' prediction
+hours_scores = [np.mean(scores_hours_lr), np.mean(scores_hours_knn), np.mean(scores_hours_dtree)]
+
+# Bar width
+barWidth = 0.25
+
+# Position of bars on x-axis
+r1 = np.arange(len(outcome_scores))
+r2 = [x + barWidth for x in r1]
+
+# Create outcome bars
+plt.bar(r1, outcome_scores, width = barWidth, color = 'blue', edgecolor = 'grey', label='Outcome')
+
+# Create working hours bars
+plt.bar(r2, hours_scores, width = barWidth, color = 'cyan', edgecolor = 'grey', label='Working Hours')
+
+# Adding xticks
+plt.xlabel('Models', fontweight='bold', fontsize=15)
+plt.ylabel('Mean Cross-Validation Score', fontweight='bold', fontsize=15)
+plt.xticks([r + barWidth for r in range(len(outcome_scores))], models)
+
+plt.legend()
+plt.show()
