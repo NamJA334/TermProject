@@ -275,8 +275,8 @@ al_func=[logistic_reg,decision_cls,knn_cls]
 sc_func=[standard_scale,minmax_scale,maxabs_scale,robust_scale]
 
 #encoding func
-enc_func=[label_enc]
-''',onehot_enc'''
+enc_func=[label_enc,onehot_enc]
+
 
 
 #result=[k,used features, scaler, encoder, algorithm, accuracy, precision, recall, f1, cutoff]
@@ -317,7 +317,7 @@ for j in cutoff:#cutoff
                 cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
                 X = pd.concat([num_d, cat_d], axis=1)#merge cat data and num data
                 print(X.shape[1]-1)
-                for feature_num in range(2,X.shape[1]):#feature select
+                for feature_num in range(2,X.shape[1]+1):#feature select
                      
                     #for select features
                     for combination in itertools.combinations(X.columns, feature_num):
@@ -337,6 +337,8 @@ for j in cutoff:#cutoff
                             y_precision=[]
                             y_recall=[]
                             y_f1=[]
+                            y_test_=[]
+                            y_pred_=[]
               
                             for train_index,test_index in kf.split(X):#divide data
                                 X_train, X_test = X.iloc[train_index], X.iloc[test_index]
@@ -355,38 +357,81 @@ for j in cutoff:#cutoff
                                 y_precision.append(precision)
                                 y_recall.append(recall)
                                 y_f1.append(f1)
+                                y_test_=y_test_+y_test
+                                y_pred_=y_pred_+y_pred
                 
                             #append to result and print
-                            result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j],combination])
-                            print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
+                            result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j,y_test_,y_pred_],combination])
+                            #print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
                             result_num+=1
                             X = pd.concat([num_d, cat_d], axis=1)#changes to original              
 
 
 
+result_good_model=[]
 #Top 5 Results with High Accuracy            
 result.sort(key=lambda x: x[0][4], reverse=True)
 print("Top 5 Results with High Accuracy")
 for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
-
+    result_good_model.append(result[i])
 
 #Top 5 Results with High Precision
-result.sort(key=lambda x: x[0][5], reverse=True) 
+result.sort(key=lambda x: x[0][5], reverse=True)
+ 
 print("Top 5 Results with High Precision")                   
 for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
-
+    result_good_model.append(result[i])
 
 #Top 5 Results with High Recall
 result.sort(key=lambda x: x[0][6], reverse=True)   
 print("Top 5 Results with High Recall")                 
 for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
-
+    result_good_model.append(result[i])
 
 #Top 5 Results with High f1
 result.sort(key=lambda x: x[0][7], reverse=True)  
 print("Top 5 Results with High f1")                  
 for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
+    result_good_model.append(result[i])
+
+#remove duplication
+result_good_model=list(set(result_good_model))
+
+#ROC
+from sklearn.metrics import roc_curve, auc
+import matplotlib.pyplot as plt
+
+model_accuracy=[]
+
+
+for i in range(result_good_model.shape[1]+1):
+    fpr, tpr, thresholds = roc_curve(y_test, y_pred)
+    roc_auc = auc(fpr, tpr)
+    
+    plt.plot(fpr, tpr, lw=2, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='gray', label='Random guessing')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve %d'%i)
+    plt.legend(loc="lower right")
+
+    plt.plot([0, 0, 1], [0, 1, 1], lw=2, linestyle='--', color='gray')
+    plt.text(0.5, 0.5, 'AUC = %0.2f' % roc_auc, ha='center', va='center', color='gray')
+
+    plt.show()
+    
+    accuracy = sum([1 for i in range(len(y_pred)) if y_pred[i] == y_test[i]]) / len(y_pred)
+
+    model_accuracy.append([accuracy,i])
+    
+
+model_accuracy.sort(key=lambda x: x[0], reverse=True) 
+
+print()
+print("best model:")
+print("k=",result[model_accuracy[0][1]][0][0],", used features=",result[model_accuracy[0][1]][1],", scaler=",result[model_accuracy[0][1]][0][1].__name__,", encoder=",result[model_accuracy[0][1]][0][2].__name__,", algorithm=",result[model_accuracy[0][1]][0][3].__name__,", accuracy=",result[model_accuracy[0][1]][0][4],", precision=",result[model_accuracy[0][1]][0][5],", recall=",result[model_accuracy[0][1]][0][6],", f1=",result[model_accuracy[0][1]][0][7],", cutoff=",result[model_accuracy[0][1]][0][8])
+   
