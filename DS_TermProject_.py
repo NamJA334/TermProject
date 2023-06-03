@@ -121,10 +121,35 @@ print(data.head())
 
 data_encoded = data
 
-
-# Step 5. Clustering
+# Step 5. Scaling Data
 print("===================================================================")
-print("                        Step 5. Clustering")
+print("                  Step 5. Scaling Data")
+print("===================================================================")
+
+# StandardScaler
+scaler = StandardScaler()
+data_standard_scaled = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
+
+# MinMaxScaler
+scaler = MinMaxScaler()
+data_minmax_scaled = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
+
+# MaxAbsScaler
+scaler = MaxAbsScaler()
+data_maxabs_scaled = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
+
+# RobustScaler
+scaler = RobustScaler()
+data_robust_scaled = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
+
+# Update 'data' to be the scaled data
+# Maybe changed to the other scaler
+data = data_standard_scaled.copy()
+
+
+# Step 6. Clustering
+print("===================================================================")
+print("                        Step 6. Clustering")
 print("===================================================================")
 
 from sklearn.cluster import KMeans
@@ -148,9 +173,9 @@ data_encoded['predicted_outcome'] = labels
 print(data_encoded.head())
 
 
-# Step 6. Logistic Regression
+# Step 7. Logistic Regression
 print("===================================================================")
-print("                 Step 6. Logistic Regression")
+print("                 Step 7. Logistic Regression")
 print("===================================================================")
 
 from sklearn.linear_model import LogisticRegression
@@ -200,9 +225,9 @@ print(accuracy_hours)
 
 
 
-# Step 7. k-fold cross validation for Logistic Regression
+# Step 8. k-fold cross validation for Logistic Regression
 print("===================================================================")
-print("      Step 7. k-fold cross validation for Logistic Regression")
+print("      Step 8. k-fold cross validation for Logistic Regression")
 print("===================================================================")
 from sklearn.model_selection import cross_val_score
 
@@ -244,9 +269,9 @@ print(scores_hours_lr)
 print("\n----- Working Hours Prediction Mean Cross-Validation Score -----\n")
 print(np.mean(scores_hours_lr))
 
-# Step 8. k-fold cross validation for KNN
+# Step 9. k-fold cross validation for KNN
 print("===================================================================")
-print("                  Step 8. k-fold cross validation for KNN")
+print("                  Step 9. k-fold cross validation for KNN")
 print("===================================================================")
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -290,9 +315,9 @@ print("\n----- Working Hours Prediction Mean Cross-Validation Score -----\n")
 print(np.mean(scores_hours_knn))
 
 
-# Step 9. k-fold cross validation for Decision Tree
+# Step 10. k-fold cross validation for Decision Tree
 print("===================================================================")
-print("            Step 9. k-fold cross validation for Decision Tree")
+print("            Step 10. k-fold cross validation for Decision Tree")
 print("===================================================================")
 
 # 1. Outcome
@@ -333,9 +358,9 @@ print(scores_hours_dtree)
 print("\n----- Working Hours Prediction Mean Cross-Validation Score -----\n")
 print(np.mean(scores_hours_dtree))
 
-# Step 10. k-fold cross validation score - plot
+# Step 11. k-fold cross validation score - plot
 print("===================================================================")
-print("            Step 10. k-fold cross validation score - plot")
+print("            Step 11. k-fold cross validation score - plot")
 print("===================================================================")
 
 import matplotlib.pyplot as plt
