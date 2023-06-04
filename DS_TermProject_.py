@@ -187,44 +187,7 @@ def knn_cls(X_train,y_train,X_test,cutoff):
 
 
 
-#===============================================================================
-#============================== Modeling (Clustering) =================================
-#===============================================================================
 
-# from sklearn.cluster import KMeans
-# import matplotlib.pyplot as plt
-
-# import itertools
-
-# features = ['age', 'sex', 'workclass', 'education','education num',
-#                      'capital-gain','capital-loss','hours-per-week']
-
-# en_X=encoding_data
-
-# for combination in itertools.combinations(features, 2):
-#   combination=list(combination)
-#   f1=combination[0]
-#   f2=combination[1]
-
-#   # make clustering .
-#   kmeans = KMeans(n_clusters=3, random_state=0)
-
-#   # model fitting
-#   kmeans.fit(en_X)
-
-#   # get clustering labels_
-#   labels = kmeans.labels_
-
-#   print("---------------------- ( ",f1,",",f2," ) ----------------------")
-
-#   # Visualize
-#   # We have 8 features without outcome.
-#   # So, Make all available cases of features.
-
-#   plt.scatter(en_X[f1], en_X[f2] , c=labels)
-#   plt.xlabel(f1)
-#   plt.ylabel(f2)
-#   plt.show()
 
 
 
@@ -275,7 +238,7 @@ al_func=[logistic_reg,decision_cls,knn_cls]
 sc_func=[standard_scale,minmax_scale,maxabs_scale,robust_scale]
 
 #encoding func
-enc_func=[label_enc,onehot_enc]
+enc_func=[label_enc]
 
 
 
@@ -302,9 +265,31 @@ y =LabelEncoder().fit_transform(data['outcome'])
 K=[10]# k for k-fold 
 cutoff=[0.5]# cutoff for ROC
 
+#PCA function for numerical data
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+def cls_pca(data):
+    pca=PCA(n_components=1)
+    data_reduced=pca.fit_transform(data)
+    data_reduced=pd.DataFrame(data_reduced,columns=['new_X'])
+    
+    return data_reduced
+
+#corvariance
+features = numerical_data.columns
+
+cov_matrix = np.cov(standard_scale(numerical_data[features]).T)
 
 
+cov_df = pd.DataFrame(cov_matrix, columns=features, index=features)
 
+print(cov_df)
+
+#education num is positively correlated with capital-gain and hours-per-week
+new_X=cls_pca(numerical_data[['education num','capital-gain','hours-per-week']])
+print(new_X)
+numerical_data=pd.concat([numerical_data[['age','capital-loss']],new_X],axis=1)
+print(numerical_data)
 #k-fold cross validation using same algoritm, but select defferent combination of model parameters
 import itertools
 for j in cutoff:#cutoff
@@ -316,7 +301,7 @@ for j in cutoff:#cutoff
                 num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
                 cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
                 X = pd.concat([num_d, cat_d], axis=1)#merge cat data and num data
-                
+                print(X.columns)
                 for feature_num in range(2,X.shape[1]+1):#feature select
                      
                     #for select features
@@ -362,7 +347,7 @@ for j in cutoff:#cutoff
                 
                             #append to result and print
                             result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j,y_test_,y_pred_],combination])
-                            #print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
+                            print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
                             result_num+=1
                             X = pd.concat([num_d, cat_d], axis=1)#changes to original              
 
@@ -434,4 +419,11 @@ model_accuracy.sort(key=lambda x: x[0], reverse=True)
 print()
 print("best model:")
 print("k=",result[model_accuracy[0][1]][0][0],", used features=",result[model_accuracy[0][1]][1],", scaler=",result[model_accuracy[0][1]][0][1].__name__,", encoder=",result[model_accuracy[0][1]][0][2].__name__,", algorithm=",result[model_accuracy[0][1]][0][3].__name__,", accuracy=",result[model_accuracy[0][1]][0][4],", precision=",result[model_accuracy[0][1]][0][5],", recall=",result[model_accuracy[0][1]][0][6],", f1=",result[model_accuracy[0][1]][0][7],", cutoff=",result[model_accuracy[0][1]][0][8])
-  
+    
+    
+    
+    
+    
+        
+    
+    
