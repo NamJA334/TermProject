@@ -148,9 +148,9 @@ def logistic_reg(X_train,y_train,X_test,cutoff):
     log_reg.fit(X_train, y_train)
 
     # get y_pred using predict X_test.
-    y_pred_prob = log_reg.predict_proba(X_test)
+    y_pred_prob = log_reg.predict_proba(X_test)#probability of y
     
-    y_pred=(y_pred_prob[:, 1] >= cutoff).astype(int)
+    y_pred=(y_pred_prob[:, 1] >= cutoff).astype(int)#y prediction based on cutoff
 
 
     return y_pred
@@ -164,8 +164,8 @@ def decision_cls(X_train,y_train,X_test,cutoff):
     dcs = dcs.fit(X_train,y_train)
 
     #Predict the response for test dataset
-    y_pred_prob = dcs.predict_proba(X_test)
-    y_pred=(y_pred_prob[:, 1] >= cutoff).astype(int)
+    y_pred_prob = dcs.predict_proba(X_test)#probability of y
+    y_pred=(y_pred_prob[:, 1] >= cutoff).astype(int)#y prediction based on cutoff
     
     return y_pred
     
@@ -178,8 +178,8 @@ def knn_cls(X_train,y_train,X_test,cutoff):
     knn = knn.fit(X_train,y_train)
 
     #Predict the response for test dataset
-    y_pred_prob = knn.predict_proba(X_test)
-    y_pred=(y_pred_prob[:, 1] >= cutoff).astype(int)
+    y_pred_prob = knn.predict_proba(X_test)#probability of y
+    y_pred=(y_pred_prob[:, 1] >= cutoff).astype(int)#y prediction based on cutoff
     
     return y_pred
     
@@ -432,3 +432,4 @@ print()
 print("best model:")
 print("k=",result[model_accuracy[0][1]][0][0],", used features=",result[model_accuracy[0][1]][1],", scaler=",result[model_accuracy[0][1]][0][1].__name__,", encoder=",result[model_accuracy[0][1]][0][2].__name__,", algorithm=",result[model_accuracy[0][1]][0][3].__name__,", accuracy=",result[model_accuracy[0][1]][0][4],", precision=",result[model_accuracy[0][1]][0][5],", recall=",result[model_accuracy[0][1]][0][6],", f1=",result[model_accuracy[0][1]][0][7],", cutoff=",result[model_accuracy[0][1]][0][8])
     
+     
