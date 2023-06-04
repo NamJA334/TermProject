@@ -129,7 +129,7 @@ def onehot_enc(data):
 
 
 #===============================================================================
-#============================== get y_pred function =================================
+#==============================algorithm(classification,regression) function =================================
 #===============================================================================
 
 
@@ -188,8 +188,9 @@ def knn_cls(X_train,y_train,X_test,cutoff):
 
 
 
-
-
+#===============================================================================
+#============================== scalinig function =================================
+#===============================================================================
 
 from sklearn.model_selection import train_test_split
 
@@ -288,14 +289,20 @@ print(cov_df)
 #education num is positively correlated with capital-gain and hours-per-week
 new_X=cls_pca(numerical_data[['education num','capital-gain','hours-per-week']])
 print(new_X)
+
+#merge data
 numerical_data=pd.concat([numerical_data[['age','capital-loss']],new_X],axis=1)
 print(numerical_data)
+
+
 #k-fold cross validation using same algoritm, but select defferent combination of model parameters
 import itertools
 for j in cutoff:#cutoff
     for i in K:# k for k-fold cross validation
         for sc_f in sc_func:#for scaling
             for enc_f in enc_func:#for encoding
+                
+                
                 num_d=sc_f(numerical_data)#numerical data after scaling
                 cat_d = enc_f(categorical_data)#categorical data after encoding
                 num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
@@ -303,6 +310,8 @@ for j in cutoff:#cutoff
                 X = pd.concat([num_d, cat_d], axis=1)#merge cat data and num data
                 print(X.columns)
                 for feature_num in range(2,X.shape[1]+1):#feature select
+                     
+                     
                      
                     #for select features
                     for combination in itertools.combinations(X.columns, feature_num):
@@ -347,7 +356,7 @@ for j in cutoff:#cutoff
                 
                             #append to result and print
                             result.append([[i,sc_f,enc_f,al_f,sum(y_accuracy) / len(y_accuracy),sum(y_precision) / len(y_precision),sum(y_recall) / len(y_recall),sum(y_f1) / len(y_f1),j,y_test_,y_pred_],combination])
-                            print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
+                            #print("k=",result[result_num][0][0],", used features=",result[result_num][1],", scaler=",result[result_num][0][1].__name__,", encoder=",result[result_num][0][2].__name__,", algorithm=",result[result_num][0][3].__name__,", accuracy=",result[result_num][0][4],", precision=",result[result_num][0][5],", recall=",result[result_num][0][6],", f1=",result[result_num][0][7],", cutoff=",result[result_num][0][8])
                             result_num+=1
                             X = pd.concat([num_d, cat_d], axis=1)#changes to original              
 
@@ -384,13 +393,15 @@ for i in range(5):
     result_good_model.append(result[i])
 
 
+
+
 #ROC
 from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 
 model_accuracy=[]
 
-
+#print ROC graph
 for i in range(len(result_good_model)):
     fpr, tpr, thresholds = roc_curve(result_good_model[i][0][9], result_good_model[i][0][10])
     roc_auc = auc(fpr, tpr)
@@ -407,21 +418,16 @@ for i in range(len(result_good_model)):
 
     plt.show()
     
-    accuracy = sum([1 for i in range(len(y_pred)) if y_pred[i] == y_test[i]]) / len(y_pred)
-
-    model_accuracy.append([accuracy,i])
     
 
+    model_accuracy.append([roc_auc,i])
+    
+#sort by AUC
 model_accuracy.sort(key=lambda x: x[0], reverse=True) 
 
+
+#print best model
 print()
 print("best model:")
 print("k=",result[model_accuracy[0][1]][0][0],", used features=",result[model_accuracy[0][1]][1],", scaler=",result[model_accuracy[0][1]][0][1].__name__,", encoder=",result[model_accuracy[0][1]][0][2].__name__,", algorithm=",result[model_accuracy[0][1]][0][3].__name__,", accuracy=",result[model_accuracy[0][1]][0][4],", precision=",result[model_accuracy[0][1]][0][5],", recall=",result[model_accuracy[0][1]][0][6],", f1=",result[model_accuracy[0][1]][0][7],", cutoff=",result[model_accuracy[0][1]][0][8])
-    
-    
-    
-    
-    
-        
-    
     
