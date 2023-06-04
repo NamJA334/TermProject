@@ -392,7 +392,7 @@ model_accuracy=[]
 
 
 for i in range(len(result_good_model)+1):
-    fpr, tpr, thresholds = roc_curve(y_test, y_pred)
+    fpr, tpr, thresholds = roc_curve(result_good_model[i][0][9], result_good_model[i][0][10])
     roc_auc = auc(fpr, tpr)
     
     plt.plot(fpr, tpr, lw=2, label='ROC curve (area = %0.2f)' % roc_auc)
