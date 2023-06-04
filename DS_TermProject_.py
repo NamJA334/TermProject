@@ -383,8 +383,6 @@ for i in range(5):
     print("k=",result[i][0][0],", used features=",result[i][1],", scaler=",result[i][0][1].__name__,", encoder=",result[i][0][2].__name__,", algorithm=",result[i][0][3].__name__,", accuracy=",result[i][0][4],", precision=",result[i][0][5],", recall=",result[i][0][6],", f1=",result[i][0][7],", cutoff=",result[i][0][8])
     result_good_model.append(result[i])
 
-#remove duplication
-result_good_model=list(set(result_good_model))
 
 #ROC
 from sklearn.metrics import roc_curve, auc
