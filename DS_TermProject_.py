@@ -93,10 +93,155 @@ print(data.shape)
 print()
 
 
+# Step 4. Categorical Values
+print("===================================================================")
+print("                  Step 4. Categorical Values")
+print("===================================================================")
+
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 # Keep real data.
 real_data=data.copy()
 
+# encode the categorical columns using LabelEncoder
+le = LabelEncoder()
+data['sex'] = le.fit_transform(data['sex'])
+data['workclass'] = le.fit_transform(data['workclass'].astype(str))
+data['education'] = le.fit_transform(data['education'].astype(str))
+data['outcome'] = le.fit_transform(data['outcome'])
+
+# Keep encoding data.
+encoding_data=data.copy()
+
+print("\n----- Label Encoding -----\n")
+print(data)
+
+
+
+# encode the categorical columns using OneHotEncoder
+ohe = OneHotEncoder()
+ohe_result = ohe.fit_transform(data[['sex', 'workclass', 'education']])
+
+# generate feature names for the encoded columns
+def get_feature_names_from_column(data, col):
+    unique_categories = data[col].unique()
+    feature_names = [col + '_' + str(x) for x in unique_categories]
+    return feature_names
+
+cat_cols = ['sex', 'workclass', 'education']
+feature_names = []
+for col in cat_cols:
+    feature_names.extend(get_feature_names_from_column(data, col))
+
+# create a new DataFrame from the OneHotEncoder result
+ohe_df = pd.DataFrame(ohe_result.toarray(), columns=feature_names)
+
+# dummy=pd.get_dummies(data[['sex', 'workclass', 'education']])
+# print("dummy : ",dummy)
+
+# concatenate the encoded columns with the original dataset
+data = pd.concat([data, ohe_df], axis=1)
+
+
+
+# drop the original categorical columns
+data.drop(['sex', 'workclass', 'education'], axis=1, inplace=True)
+
+# Keep onehotencoder data.
+onehotencoder_data=data.copy()
+
+print("\n----- OneHotencoder -----\n")
+print(data)
+
+
+
+# Step 5. Training & Test Set
+print("===================================================================")
+print("                  Step 5. Training & Test Set")
+print("===================================================================")
+
+# split the dataset into training  and test set
+X = data.drop('outcome', axis=1)
+y = data['outcome']
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+print("Shape of X_train:", X_train.shape)
+print("Shape of X_test:", X_test.shape)
+print("Shape of y_train:", y_train.shape)
+print("Shape of y_test:", y_test.shape)
+
+print("\n>> X_train\n", X_train)
+print("\n>> X_test\n", X_test)
+print("\n>> y_train\n", y_train)
+print("\n>> y_test\n", y_test)
+
+
+
+# Step 6. Feature Scaling
+print("===================================================================")
+print("                  Step 6. Feature Scaling")
+print("===================================================================")
+
+# feature scaling (standard scaler)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+print("\n----- X_train_scaled -----\n")
+print(X_train_scaled)
+
+print("\n----- X_test_scaled -----\n")
+print(X_test_scaled)
+
+
+# Keep real data.
+# real_data=data.copy()
+
+
+#===============================================================================
+#============================== Modeling (Clustering) =================================
+#===============================================================================
+
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
+import itertools
+
+features = ['age', 'sex', 'workclass', 'education','education num',
+                     'capital-gain','capital-loss','hours-per-week']
+
+en_X=encoding_data
+
+for combination in itertools.combinations(features, 2):
+  combination=list(combination)
+  f1=combination[0]
+  f2=combination[1]
+
+  # make clustering .
+  kmeans = KMeans(n_clusters=3, random_state=0)
+
+  # model fitting
+  kmeans.fit(en_X)
+
+  # get clustering labels_
+  labels = kmeans.labels_
+
+  print("---------------------- ( ",f1,",",f2," ) ----------------------")
+
+  # Visualize
+  # We have 8 features without outcome.
+  # So, Make all available cases of features.
+
+  plt.scatter(en_X[f1], en_X[f2] , c=labels)
+  plt.xlabel(f1)
+  plt.ylabel(f2)
+  plt.show()
+
+
+data=real_data
 
 
 
