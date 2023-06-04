@@ -308,7 +308,7 @@ for j in cutoff:#cutoff
                 num_d = pd.DataFrame(num_d, columns=numerical_data.columns)
                 cat_d = pd.DataFrame(cat_d, columns=cat_d.columns)
                 X = pd.concat([num_d, cat_d], axis=1)#merge cat data and num data
-                print(X.columns)
+
                 for feature_num in range(2,X.shape[1]+1):#feature select
                      
                      
@@ -403,6 +403,7 @@ model_accuracy=[]
 
 #print ROC graph
 for i in range(len(result_good_model)):
+    #tpr(true positive rate), fpr(false positive rate), thresholds for use roc_curve function
     fpr, tpr, thresholds = roc_curve(result_good_model[i][0][9], result_good_model[i][0][10])
     roc_auc = auc(fpr, tpr)
     
