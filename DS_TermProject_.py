@@ -391,7 +391,7 @@ import matplotlib.pyplot as plt
 model_accuracy=[]
 
 
-for i in range(result_good_model.shape[1]+1):
+for i in range(len(result_good_model)+1):
     fpr, tpr, thresholds = roc_curve(y_test, y_pred)
     roc_auc = auc(fpr, tpr)
     
